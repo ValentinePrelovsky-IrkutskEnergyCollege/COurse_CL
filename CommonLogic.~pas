@@ -1,0 +1,47 @@
+unit CommonLogic;
+
+interface
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Dialogs,
+   StdCtrls,wdCore,MyUtils,ShellApi{ShellExecute};
+
+procedure convert_docx2pdf(input,output:string);
+procedure convert_pdf2jpg(input,output: string);
+
+implementation
+var w: TwdCore;
+
+procedure startWord();
+begin
+  if (w = nil) then w := TWdCore.Create;
+  if (w.start() = false) then w.start;
+end;
+
+procedure convert_docx2pdf(input,output:string);
+var path,docName:string;
+begin
+  // docx to pdf - run by wdcore save as
+  startWord(); // start if not yet
+
+  path := output;
+  docName := input;
+
+  w.openDoc(docName);
+  // exports all pages by default + optimized for print
+  w.getApp.ActiveDocument.ExportAsFixedFormat(path, wdExportFormatPDF);
+  w.saveAndClose();
+end;
+
+procedure convert_pdf2jpg(input,output: string);
+var pF,p2:string;
+var p0,p1: PChar;
+begin
+  // pdf 2 jpg - using ghostScript + ImageMagick (scripts);
+  pF := input; p0 := PChar(pF);
+  p2 := output;p1 := PChar(p2);
+  //ShellExecute(0, nil, 'cmd.exe', '/C find "320" in.txt > out.txt', nil, SW_HIDE);
+  ShellExecute(0, nil, 'C:\123\b.bat', nil,nil, SW_SHOWNORMAL);//SW_HIDE
+ Sleep(1000);
+end; // convert pdf2jpg
+
+end.

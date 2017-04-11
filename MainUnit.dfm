@@ -30,13 +30,14 @@ object Form1: TForm1
     Caption = 'Button1'
     TabOrder = 1
   end
-  object Button2: TButton
-    Left = 304
-    Top = 32
+  object Button3: TButton
+    Left = 224
+    Top = 96
     Width = 75
     Height = 25
-    Caption = 'Button2'
+    Caption = 'docx -> jpg'
     TabOrder = 2
+    OnClick = Button3Click
   end
   object IdTCPServer1: TIdTCPServer
     Active = True

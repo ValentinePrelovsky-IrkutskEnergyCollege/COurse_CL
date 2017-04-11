@@ -4,17 +4,19 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, IdBaseComponent, IdComponent, IdTCPServer, StdCtrls;
+  Dialogs, IdBaseComponent, IdComponent, IdTCPServer, StdCtrls, CommonLogic,
+  MyUtils,ShellApi{shellexecute};
 
 type
   TForm1 = class(TForm)
     Memo1: TMemo;
     Button1: TButton;
-    Button2: TButton;
     IdTCPServer1: TIdTCPServer;
+    Button3: TButton;
     procedure IdTCPServer1TestHandlerCommand(ASender: TIdCommand);
     procedure IdTCPServer1FullScreenHandlerCommand(ASender: TIdCommand);
     procedure IdTCPServer1FullFormHandlerCommand(ASender: TIdCommand);
+    procedure Button3Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -47,6 +49,17 @@ end;
 procedure TForm1.IdTCPServer1FullFormHandlerCommand(ASender: TIdCommand);
 begin
   log('FULL_FORM');
+end;
+
+procedure TForm1.Button3Click(Sender: TObject);
+var wordPath,pdfPath,jpgPath:string;
+begin
+  wordPath := getAppPath + '\data\inputDoc.docx'  ;
+  pdfPath  := getAppPath() + '\data\midOutput.pdf';
+  jpgPath  := getAppPath() + '\data\output.jpg';
+
+  convert_docx2pdf(wordPath , pdfPath);
+  convert_pdf2jpg (pdfPath  , jpgPath);
 end;
 
 end.
