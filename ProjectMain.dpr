@@ -3,7 +3,8 @@ program ProjectMain;
 uses
   Forms,
   MainUnit in 'MainUnit.pas' {Form1},
-  getDosOutputUnit in '..\..\delphi\getDOS_Output\getDosOutputUnit.pas';
+  getDosOutputUnit in '..\..\delphi\getDOS_Output\getDosOutputUnit.pas',
+  MyUtils in '..\..\delphi\utils\MyUtils.pas';
 
 {$R *.res}
 

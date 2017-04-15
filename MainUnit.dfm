@@ -1,9 +1,9 @@
 object Form1: TForm1
   Left = 192
   Top = 124
-  Width = 392
-  Height = 167
-  Caption = 'Form1'
+  Width = 337
+  Height = 163
+  Caption = 'PDF_2_PNG'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -49,8 +49,8 @@ object Form1: TForm1
     OnClick = Button2Click
   end
   object Button3: TButton
-    Left = 232
-    Top = 72
+    Left = 216
+    Top = 64
     Width = 65
     Height = 33
     Caption = 'Button3'
