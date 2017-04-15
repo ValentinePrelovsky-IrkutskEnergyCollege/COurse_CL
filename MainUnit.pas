@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ShellAPI,getDosOutputUnit, StdCtrls,MyUtils;
+  Dialogs, ShellAPI,getDosOutputUnit, StdCtrls,MyUtils,ConverterUnit;
 
 type
   TForm1 = class(TForm)
@@ -28,15 +28,11 @@ type
 
 var
   Form1: TForm1;
-  path: string;
-  files, commands: TStringList;
 
-const def_path =  'C:\Program Files (x86)\gs\gs9.09\bin\';
-const tempPath = 'C:\123\pdf2 png\';
+  files, commands: TStringList;
 
 implementation
 
-uses StrUtils;
 // path := C:\Program Files (x86)\gs\gs9.09\bin\
 // path gswin32 -dNOPAUSE -sDEVICE=jpeg -r150 -sOutputFile=output-%d.png midOutput.pdf
 {$R *.dfm}
@@ -90,7 +86,7 @@ begin
     'Принято по умолчанию 150 точек на дюйм',mtWarning,[mbOk],0);
     s := '150';
   end;
-  j := s;
+  dpi := s;
 
   OpenDialog1.Filter := 'PDF file|*.pdf';OpenDialog1.FilterIndex := 1;
   bOpened := OpenDialog1.Execute;
@@ -118,21 +114,7 @@ begin
     begin
       files.Add(Trim(OpenDialog1.Files[i]));
 
-      //DeleteFile(tempPath+'1.pdf');
-      s1 :=(copyDoc(Trim(OpenDialog1.Files[i]),tempPath)); // returns new file
-      s2 := tempPath + IntToStr(i)+'.pdf';
-      RenameFile(s1,s2);
-
-      // сама команда для посылки
-      comm :=  '"' + path +''
-      + 'gswin32" -dNOPAUSE -dBATCH -sDEVICE=png16m -r' +j
-      +' -sOutputFile="' + tempPath+IntToStr(i)+'.png" "'
-      + Trim(s2) + '"';
-
-      //ExtractFileName(SaveDialog1.FileName)
-      //Trim(s2) == OpenDialog1.Files[i]
-      commands.Add(comm);
-      ShowMessage(comm);
+      pdf2png(OpenDialog1.Files[i]);
     end;
   end; // bOpened
 
@@ -164,62 +146,6 @@ begin
   end;
 end;
 
-function copyOrigin(originPDF,tempPDF:string):boolean;
-var res: boolean;
-begin
-  Result := CopyFile(PChar(originPDF),PChar(tempPDF),true);;
-end;
-
-// returns temp PNG name
-function convertTemp(incomePDF:string;counter:integer):string;
-var pngName:string;
-comm:string;
-var commands: TStringList;
-begin
-  pngName := 'undef';
-   commands :=TStringList.Create;
-
-   // сама команда для посылки
-      comm :=  '"' + path +''
-      + 'gswin32" -dNOPAUSE -dBATCH -sDEVICE=png16m -r150'
-      +' -sOutputFile="' + tempPath+IntToStr(counter)+'.png" "'
-      + Trim(incomePDF) + '"';
-//  ShowMessage('command = ' + comm);
-  commands.Add(comm);
-  commands.SaveToFile(tempPath + 'in.bat');
-
-  //ShowMessage(tempPath + 'in.bat');
-  getDosOutput(tempPath + 'in.bat');
-
-  Result := tempPath+IntToStr(counter)+'.png';
-end;
-function setOriginName(tempPNG,originPDF_ShortName:string):string;
-  var res:string;
-begin
-  res := ExtractFileDir(tempPNG)+'\'+originPDF_ShortName+'.png';
-  RenameFile(tempPNG,ExtractFileDir(tempPNG)+'\'+originPDF_ShortName+'.png');
-  Result := res;
-end;
-
-procedure pdf2png(inComePDF:string);
-var docIn,docOut,imgIn,imgOut:string;
-k:string;
-
-begin
-  docIn  := inComePDF;
-  docOut := tempPath+'1.pdf';
-  imgIn  := tempPath + '1.png';
-
-  k :=  ExtractFileName(docIn);
-  k := LeftStr(k,Length(k)-4); // 4ИС.pdf ->  4ИС
-
-  copyOrigin(docIn, docOut);
-  convertTemp(docOut,1);
-  imgOut := setOriginName(imgIn,k);
-  // возвратит файл изображение на место
-  DeleteFile(ExtractFileDir(docIn) + '\' + k +'.png');
-  CopyFile(PCHar(imgOut),PChar(ExtractFileDir(docIn) + '\' + k +'.png'),true);
-end;
 
 procedure TForm1.Button3Click(Sender: TObject);
 const f = 'C:\env\tools\pdf2png\4ИС.pdf';
