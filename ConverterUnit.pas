@@ -1,9 +1,7 @@
 unit ConverterUnit;
 
 interface
-uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ShellAPI,getDosOutputUnit, StdCtrls,MyUtils,StrUtils;
+uses  Windows, SysUtils, Classes,getDosOutputUnit,MyUtils,StrUtils;
 
 procedure pdf2png(inComePDF:string);
 function copyOrigin(originPDF,tempPDF:string):boolean;
@@ -17,36 +15,33 @@ const tempPath = 'C:\123\pdf2 png\';
 
 implementation
 
-
+// simple copy for string
 function copyOrigin(originPDF,tempPDF:string):boolean;
-var res: boolean;
 begin
   Result := CopyFile(PChar(originPDF),PChar(tempPDF),true);;
 end;
 
 // returns temp PNG name
 function convertTemp(incomePDF:string;counter:integer):string;
-var pngName:string;
-comm:string;
+var comm:string;
 var commands: TStringList;
 begin
-  pngName := 'undef';
    commands :=TStringList.Create;
-   ShowMessage(dpi);
+
    // сама команда для посылки
       comm :=  '"' + path +''
       + 'gswin32" -dNOPAUSE -dBATCH -sDEVICE=jpeg -r'+Trim(dpi)
       +' -sOutputFile="' + tempPath+IntToStr(counter)+'.png" "'
       + Trim(incomePDF) + '"';
-  ShowMessage('command = ' + comm);
   commands.Add(comm);
   commands.SaveToFile(tempPath + 'in.bat');
 
-  //ShowMessage(tempPath + 'in.bat');
   getDosOutput(tempPath + 'in.bat');
+  DeleteFile(tempPath + 'in.bat');
 
   Result := tempPath+IntToStr(counter)+'.png';
 end;
+
 function setOriginName(tempPNG,originPDF_ShortName:string):string;
   var res:string;
 begin
@@ -74,4 +69,5 @@ begin
   DeleteFile(ExtractFileDir(docIn) + '\' + k +'.png');
   CopyFile(PCHar(imgOut),PChar(ExtractFileDir(docIn) + '\' + k +'.png'),true);
 end;
+
 end.
