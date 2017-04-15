@@ -1,9 +1,9 @@
 object Form1: TForm1
   Left = 192
   Top = 124
-  Width = 392
-  Height = 167
-  Caption = 'Form1'
+  Width = 331
+  Height = 160
+  Caption = 'PDF_2_PNG'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -30,11 +30,17 @@ object Form1: TForm1
     TabOrder = 1
   end
   object Button1: TButton
-    Left = 80
+    Left = 8
     Top = 56
-    Width = 97
+    Width = 289
     Height = 49
     Caption = #1050#1086#1085#1074#1077#1088#1090#1080#1088#1086#1074#1072#1090#1100' '#1092#1072#1081#1083#1099
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -19
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
     TabOrder = 0
     WordWrap = True
     OnClick = Button1Click
@@ -48,23 +54,10 @@ object Form1: TForm1
     TabOrder = 2
     OnClick = Button2Click
   end
-  object Button3: TButton
-    Left = 232
-    Top = 72
-    Width = 65
-    Height = 33
-    Caption = 'Button3'
-    TabOrder = 3
-    OnClick = Button3Click
-  end
   object OpenDialog1: TOpenDialog
     Filter = 'PDF file|*.pdf'
     Options = [ofHideReadOnly, ofAllowMultiSelect, ofEnableSizing]
-    Left = 32
-    Top = 40
-  end
-  object SaveDialog1: TSaveDialog
-    Left = 8
-    Top = 40
+    Left = 128
+    Top = 32
   end
 end
