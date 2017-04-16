@@ -3,7 +3,8 @@ unit ConverterUnit;
 interface
 uses  Windows, SysUtils, Classes,getDosOutputUnit,MyUtils,StrUtils;
 
-procedure pdf2png(inComePDF:string);
+procedure pdf2png(inComePDF:string);overload;
+procedure pdf2png(inComePDF,outDir:string);overload;
 function copyOrigin(originPDF,tempPDF:string):boolean;
 function convertTemp(incomePDF:string;counter:integer):string;
 
@@ -50,7 +51,11 @@ begin
   Result := res;
 end;
 
-procedure pdf2png(inComePDF:string);
+procedure pdf2png(inComePDF:string);overload;
+begin
+  pdf2png(inComePDF,inComePDF);
+end;
+procedure pdf2png(inComePDF,outDir:string);overload;
 var docIn,docOut,imgIn,imgOut:string;
 k:string;
 
@@ -67,7 +72,6 @@ begin
   imgOut := setOriginName(imgIn,k);
   // возвратит файл изображение на место
   DeleteFile(ExtractFileDir(docIn) + '\' + k +'.png');
-  CopyFile(PCHar(imgOut),PChar(ExtractFileDir(docIn) + '\' + k +'.png'),true);
+  CopyFile(PCHar(imgOut),PChar(ExtractFileDir(outDir) + '\' + k +'.png'),true);
 end;
-
 end.
