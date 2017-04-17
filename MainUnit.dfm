@@ -17,8 +17,8 @@ object Form1: TForm1
   object Label1: TLabel
     Left = 336
     Top = 80
-    Width = 137
-    Height = 41
+    Width = 32
+    Height = 13
     Caption = 'Label1'
   end
   object Memo1: TMemo
@@ -48,7 +48,6 @@ object Form1: TForm1
     OnClick = Button3Click
   end
   object IdTCPServer1: TIdTCPServer
-    Active = True
     Bindings = <>
     CommandHandlers = <
       item
