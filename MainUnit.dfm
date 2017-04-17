@@ -11,8 +11,16 @@ object Form1: TForm1
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OldCreateOrder = False
+  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
+  object Label1: TLabel
+    Left = 336
+    Top = 80
+    Width = 137
+    Height = 41
+    Caption = 'Label1'
+  end
   object Memo1: TMemo
     Left = 32
     Top = 24
@@ -82,5 +90,10 @@ object Form1: TForm1
     ReplyExceptionCode = 0
     ReplyTexts = <>
     ReplyUnknownCommand.NumericCode = 0
+  end
+  object OpenDialog1: TOpenDialog
+    Filter = 'Docx files|*.docx|Doc file|*.doc'
+    Left = 384
+    Top = 40
   end
 end
