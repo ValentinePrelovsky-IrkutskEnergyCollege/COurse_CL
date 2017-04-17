@@ -1,7 +1,7 @@
 unit ConverterUnit;
 
 interface
-uses  Windows, SysUtils, Classes,getDosOutputUnit,MyUtils,StrUtils,wdCore;
+uses  Windows, SysUtils, Classes,MyUtils,StrUtils,wdCore,getDosOutputUnit;
 
 procedure pdf2png(inComePDF:string);overload;
 procedure pdf2png(inComePDF,outDir:string);overload;
@@ -128,5 +128,110 @@ begin end;
 
 procedure docx2png(inComeDoc,outDir:string);overload;
 begin end;
+
+{
+procedure TForm1.Button1Click(Sender: TObject);
+var s,outDir:string;
+var i:integer;
+var bOut, bOpened: boolean;
+var wFiles: TStringList;
+var pdfFile,wDoc:string;
+begin
+  files := TStringList.Create;
+  commands := TStringList.Create;
+  bOut := CheckBox1.Checked;
+
+  CheckBox1.Enabled := false;
+
+  s:= InputBox('Введите число точек','Введите количество точек на дюйм','');
+
+  if (s = '') then
+  begin
+    MessageDlg('Не введено количество точек на дюйм'+ #10#13+
+    'Принято по умолчанию 150 точек на дюйм',mtWarning,[mbOk],0);
+    s := '150';
+  end;
+  dpi := s; // -> converterUnit uses dpi variable
+
+  OpenDialog1.Filter := 'Word files|*.docx;*.doc';OpenDialog1.FilterIndex := 1;
+  bOpened := OpenDialog1.Execute;
+
+  if (bOpened = false) then
+  begin
+    MessageDlg('Не выбрано расположение word файлов'+ #10#13+
+    'К сожалению, нечего конвертировать. Выход',mtWarning,[mbOk],0);
+    Exit;
+  end;
+
+  if (bOut = false) then
+  begin
+    // choose different folder -> SaveDialog1
+    SaveDialog1.Title := 'Напишите имя папки для сохранения';
+    SaveDialog1.InitialDir := getCurrentDir();
+
+    if(SaveDialog1.Execute = false) then
+    begin
+      outDir := getCurrentDir() + '\defaultDir\';
+      MessageBox(Self.Handle,
+        PChar('Папка не обозначена. Записано в путь ' + outDir),
+        PChar('Запись сохраняемых файлов'),MB_OK);
+    end
+    else
+    begin
+      outDir := SaveDialog1.FileName + '\';
+    end;
+  end;
+  if (bOpened = true) then
+  begin
+    for i:=0 to (OpenDialog1.Files.Count)-1 do
+    begin
+      if (wordStarted = false) then word.start;
+      files.Add(Trim(OpenDialog1.Files[i]));
+      wDoc := OpenDialog1.Files[i];
+      pdfFile := convert_docx2pdf(wDoc);
+
+      if (bOut = true) then pdf2png(pdfFile)
+      else
+      begin
+        if (DirectoryExists(outDir) = false) then MkDir(PChar(outDir));
+        pdf2png(pdfFile,outDir);
+      end;// bOut
+      deleteFile(tempPath + '1.pdf');
+    end;  // for i:0
+  end; // bOpened
+
+  commands.Add('taskkill /im "gswin32.exe" /f /t');
+  commands.Add('del "'+tempPath+'*.*" /Q ');
+  commands.SaveToFile(tempPath+'ba.bat');
+  getDosOutput(tempPath + 'ba.bat');
+
+  deleteFile(tempPath + 'ba.bat');
+
+  CheckBox1.Enabled := true;
+end;
+
+procedure TForm1.Button2Click(Sender: TObject);
+var bSet: boolean;
+begin
+  OpenDialog1.Filter := 'Ghost application|*gs*.exe';
+  OpenDialog1.InitialDir := 'C:\Program Files';
+
+  bSet :=  OpenDialog1.Execute;
+  if (bSet = true) then
+  begin
+    ShowMessage('путь к интерпретатору GhostScript установлен как '
+    +#10#13#10#13+ OpenDialog1.FileName);
+    path := ExtractFilePath(OpenDialog1.FileName);
+  end;
+end;
+
+procedure TForm1.Button3Click(Sender: TObject);
+begin
+  ShowMessage(convert_docx2pdf('C:\env\delphi\word_core\test_frame\data\example.docx'));
+end;
+
+
+
+}
 
 end.

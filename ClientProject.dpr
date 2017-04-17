@@ -6,7 +6,9 @@ uses
   wdCore in '..\..\..\..\env\delphi\word_core\wdCore.pas',
   WTable in '..\..\..\..\env\delphi\word_core\WTable.pas',
   MyUtils in '..\..\..\..\env\delphi\utils\MyUtils.pas',
-  CommonLogic in 'components\CommonLogic.pas';
+  CommonLogic in 'components\CommonLogic.pas',
+  ConverterUnit in 'components\Converter\ConverterUnit.pas',
+  getDosOutputUnit in '..\..\..\..\env\delphi\getDOS_Output\getDosOutputUnit.pas';
 
 {$R *.res}
 
