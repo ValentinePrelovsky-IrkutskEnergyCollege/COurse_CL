@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 192
-  Top = 124
-  Width = 928
+  Left = 339
+  Top = 132
+  Width = 525
   Height = 480
   Caption = 'Form1'
   Color = clBtnFace
@@ -30,22 +30,31 @@ object Form1: TForm1
       'Memo1')
     TabOrder = 0
   end
-  object Button1: TButton
-    Left = 216
-    Top = 32
-    Width = 75
-    Height = 25
-    Caption = 'Button1'
-    TabOrder = 1
-  end
   object Button3: TButton
-    Left = 224
+    Left = 208
     Top = 96
     Width = 75
     Height = 25
     Caption = 'docx -> jpg'
+    TabOrder = 1
+  end
+  object Button2: TButton
+    Left = 32
+    Top = 208
+    Width = 137
+    Height = 41
+    Caption = 'convert docx files to png'
     TabOrder = 2
-    OnClick = Button3Click
+    OnClick = Button2Click
+  end
+  object Button1: TButton
+    Left = 56
+    Top = 280
+    Width = 97
+    Height = 41
+    Caption = 'TEST btn'
+    TabOrder = 3
+    OnClick = Button1Click
   end
   object IdTCPServer1: TIdTCPServer
     Bindings = <>
@@ -92,7 +101,12 @@ object Form1: TForm1
   end
   object OpenDialog1: TOpenDialog
     Filter = 'Docx files|*.docx|Doc file|*.doc'
+    Options = [ofHideReadOnly, ofAllowMultiSelect, ofEnableSizing]
     Left = 384
     Top = 40
+  end
+  object SaveDialog1: TSaveDialog
+    Left = 232
+    Top = 32
   end
 end

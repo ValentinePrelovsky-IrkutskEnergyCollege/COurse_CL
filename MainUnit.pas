@@ -5,21 +5,24 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, IdBaseComponent, IdComponent, IdTCPServer, StdCtrls, CommonLogic,
-  MyUtils,ShellApi{shellexecute};
+  MyUtils,ShellApi{shellexecute},converterUnit,strUtils{TEST purposes};
 
 type
   TForm1 = class(TForm)
     Memo1: TMemo;
-    Button1: TButton;
     IdTCPServer1: TIdTCPServer;
     Button3: TButton;
     OpenDialog1: TOpenDialog;
     Label1: TLabel;
+    Button2: TButton;
+    Button1: TButton;
+    SaveDialog1: TSaveDialog;
     procedure IdTCPServer1TestHandlerCommand(ASender: TIdCommand);
     procedure IdTCPServer1FullScreenHandlerCommand(ASender: TIdCommand);
     procedure IdTCPServer1FullFormHandlerCommand(ASender: TIdCommand);
-    procedure Button3Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -28,7 +31,7 @@ type
 
 var
   Form1: TForm1;
-
+  cnv: TDocumentConverter;
 implementation
 
 {$R *.dfm}
@@ -54,43 +57,51 @@ begin
   log('FULL_FORM');
 end;
 
-procedure TForm1.Button3Click(Sender: TObject);
-var wordPath,pdfPath,jpgPath:string;
-const useDialog = true;
 
-begin
-Label1.Caption := 'Конвертация начата';
-
-if (useDialog = false) then
-begin
-  wordPath := getAppPath() + '\data\inputDoc.docx';
-end
-else
-begin
-  if (OpenDialog1.Execute() = true) then
-  begin
-    wordPath := OpenDialog1.FileName;
-  end
-  else
-  begin
-    // no file chosen
-    ShowMessage('Не выбран файл. Отмена конвертации');
-    exit;
-  end; // end else execute = true
-end; // end if (useDialog = false) then
-
-  pdfPath  := ExtractFileDir(wordPath) + '\midOutput.pdf';
-  jpgPath  := ExtractFileDir(wordPath) + '\output.png';
-
-  convert_docx2pdf(wordPath , pdfPath);
-  convert_pdf2jpg (pdfPath  , jpgPath);
-
-  Label1.Caption := 'Конвертация закончена';
-end; // end button3click
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   OpenDialog1.InitialDir := getAppPath();
+  cnv := TDocumentConverter.Create();
+end;
+
+procedure TForm1.Button2Click(Sender: TObject);
+var
+    i:integer;
+    docs: TStringList;
+    pathSave: string; // каталог, куда сохранится итоговая картинка
+    useDialog:boolean;
+begin
+  useDialog := true;
+  docs := TStringList.Create();
+
+  OpenDialog1.Filter := 'Word docs | *.docx;*.doc';
+  OpenDialog1.Execute;
+
+  for i:=0 to OpenDialog1.Files.Count-1 do
+  begin
+    docs.Add(OpenDialog1.Files[i]);
+  end;
+
+  if useDialog = false then pathSave := getCurrentDir()+'\defaultDir\';
+  if (useDialog = true) then
+  begin
+    SaveDialog1.Title := 'Выберите имя каталога для сохранения';
+    SaveDialog1.Filter := 'Папки|*.*';
+
+    // true.. Если выбран каталог, так и останется
+    useDialog := SaveDialog1.Execute;
+    if useDialog = true then pathSave := SaveDialog1.FileName + '\';
+    if useDialog = false then pathSave := 'C:\Users\Valentin\Desktop\';
+  end;
+
+  ShowMessage('path save = ' + pathSave);
+  cnv.docx2png(docs,pathSave);
+end;
+
+procedure TForm1.Button1Click(Sender: TObject);
+begin
+  ShowMessage('test func');
 end;
 
 end.
