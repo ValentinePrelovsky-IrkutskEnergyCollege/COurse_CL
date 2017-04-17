@@ -13,6 +13,8 @@ type
     Label1: TLabel;
     Button1: TButton;
     Button2: TButton;
+    CheckBox1: TCheckBox;
+    SaveDialog1: TSaveDialog;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure Button1Click(Sender: TObject);
@@ -47,7 +49,7 @@ end;
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   OpenDialog1.InitialDir := getCurrentDir();
-
+  CheckBox1.Checked := true;
   Edit1.Text := def_path;
   path := def_path;
 end;
@@ -61,13 +63,15 @@ end;
 // path gswin32 -dNOPAUSE -sDEVICE=jpeg -r150 -sOutputFile=output-%d.png midOutput.pdf
 
 procedure TForm1.Button1Click(Sender: TObject);
-var s:string;
+var s,outDir:string;
 var i:integer;
-var bOpened: boolean;
-
+var bOut, bOpened: boolean;
 begin
   files := TStringList.Create;
   commands := TStringList.Create;
+  bOut := CheckBox1.Checked;
+
+  CheckBox1.Enabled := false;
 
   s:= InputBox('Введите число точек','Введите количество точек на дюйм','');
 
@@ -89,13 +93,36 @@ begin
     Exit;
   end;
 
+  if (bOut = false) then
+  begin
+    // choose different folder -> SaveDialog1
+    SaveDialog1.Title := 'Напишите имя папки для сохранения';
+    SaveDialog1.InitialDir := getCurrentDir();
+
+    if(SaveDialog1.Execute = false) then
+    begin
+      outDir := getCurrentDir() + '\defaultDir\';
+      MessageBox(Self.Handle,
+        PChar('Папка не обозначена. Записано в путь ' + outDir),
+        PChar('Запись сохраняемых файлов'),MB_OK);
+    end
+    else
+    begin
+      outDir := SaveDialog1.FileName + '\';
+    end;
+  end;
   if (bOpened = true) then
   begin
     for i:=0 to (OpenDialog1.Files.Count)-1 do
     begin
       files.Add(Trim(OpenDialog1.Files[i]));
 
-      pdf2png(OpenDialog1.Files[i]);
+      if (bOut = true) then pdf2png(OpenDialog1.Files[i])
+      else
+      begin
+        if (DirectoryExists(outDir) = false) then MkDir(PChar(outDir));
+        pdf2png(openDialog1.Files[i],outDir);
+      end;
     end;
   end; // bOpened
 
@@ -105,6 +132,8 @@ begin
   getDosOutput(tempPath + 'ba.bat');
 
   deleteFile(tempPath + 'ba.bat');
+
+  CheckBox1.Enabled := true;
 end;
 
 procedure TForm1.Button2Click(Sender: TObject);
