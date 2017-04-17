@@ -5,7 +5,8 @@ uses
   MainUnit in 'MainUnit.pas' {Form1},
   getDosOutputUnit in '..\..\delphi\getDOS_Output\getDosOutputUnit.pas',
   MyUtils in '..\..\delphi\utils\MyUtils.pas',
-  ConverterUnit in 'ConverterUnit.pas';
+  ConverterUnit in 'ConverterUnit.pas',
+  wdCore in '..\..\delphi\word_core\wdCore.pas';
 
 {$R *.res}
 

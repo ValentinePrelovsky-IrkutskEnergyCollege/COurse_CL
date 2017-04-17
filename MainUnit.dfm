@@ -1,9 +1,9 @@
 object Form1: TForm1
   Left = 192
   Top = 124
-  Width = 326
-  Height = 160
-  Caption = 'PDF_2_PNG'
+  Width = 342
+  Height = 171
+  Caption = 'DOC_2_PNG'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,6 +11,7 @@ object Form1: TForm1
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OldCreateOrder = False
+  OnClose = FormClose
   OnCreate = FormCreate
   OnShow = FormShow
   PixelsPerInch = 96
@@ -68,6 +69,15 @@ object Form1: TForm1
     ParentFont = False
     TabOrder = 3
     WordWrap = True
+  end
+  object Button3: TButton
+    Left = 296
+    Top = 48
+    Width = 17
+    Height = 57
+    Caption = 'Button3'
+    TabOrder = 4
+    OnClick = Button3Click
   end
   object OpenDialog1: TOpenDialog
     Filter = 'PDF file|*.pdf'
