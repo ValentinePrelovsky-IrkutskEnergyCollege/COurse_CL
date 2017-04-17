@@ -5,8 +5,18 @@ uses  Windows, SysUtils, Classes,getDosOutputUnit,MyUtils,StrUtils;
 
 procedure pdf2png(inComePDF:string);overload;
 procedure pdf2png(inComePDF,outDir:string);overload;
+
+procedure docx2png(inComeDoc:string);       overload;
+procedure docx2png(inComeDoc,outDir:string);overload;
+
 function copyOrigin(originPDF,tempPDF:string):boolean;
 function convertTemp(incomePDF:string;counter:integer):string;
+
+type Converter = class (TObject)
+  public
+  private
+  published
+end;
 
 var
   dpi: string;
@@ -55,6 +65,7 @@ procedure pdf2png(inComePDF:string);overload;
 begin
   pdf2png(inComePDF,inComePDF);
 end;
+
 procedure pdf2png(inComePDF,outDir:string);overload;
 var docIn,docOut,imgIn,imgOut:string;
 k:string;
@@ -74,4 +85,12 @@ begin
   DeleteFile(ExtractFileDir(docIn) + '\' + k +'.png');
   CopyFile(PCHar(imgOut),PChar(ExtractFileDir(outDir) + '\' + k +'.png'),true);
 end;
+
+
+procedure docx2png(inComeDoc:string);overload;
+begin end;
+
+procedure docx2png(inComeDoc,outDir:string);overload;
+begin end;
+
 end.

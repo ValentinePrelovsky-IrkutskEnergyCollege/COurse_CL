@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ShellAPI,getDosOutputUnit, StdCtrls,
-  StrUtils,MyUtils,ConverterUnit,wdCore;
+  Dialogs, ShellAPI,getDosOutputUnit, StdCtrls,StrUtils,MyUtils,ConverterUnit,
+  wdCore;
 
 type
   TForm1 = class(TForm)
@@ -207,7 +207,6 @@ end;
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
     word.exit();
-    //Close;
 end;
 
 end.

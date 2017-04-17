@@ -71,7 +71,7 @@ object Form1: TForm1
     WordWrap = True
   end
   object Button3: TButton
-    Left = 296
+    Left = 304
     Top = 48
     Width = 17
     Height = 57
