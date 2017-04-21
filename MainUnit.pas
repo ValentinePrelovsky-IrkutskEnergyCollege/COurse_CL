@@ -4,8 +4,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, IdBaseComponent, IdComponent, IdTCPServer, StdCtrls, CommonLogic,
-  MyUtils,ShellApi{shellexecute},converterUnit,strUtils, FileCtrl{TEST purposes};
+  Dialogs, IdBaseComponent, IdComponent, IdTCPServer, StdCtrls{, CommonLogic},
+  MyUtils,ShellApi{shellexecute},converterUnit,strUtils,
+  FileCtrl{TEST purposes}, LoggerUnit;
 
 type
   TForm1 = class(TForm)
@@ -22,12 +23,14 @@ type
     procedure FormCreate(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   public
     { Public declarations }
   end;
 
+const dbg = true;
 var
   Form1: TForm1;
   cnv: TDocumentConverter;
@@ -35,33 +38,37 @@ implementation
 
 {$R *.dfm}
 
-procedure log(input: string);
+procedure logF(input: string);
 begin
   Form1.Memo1.Lines.Add(input);
 end;
 
+
 procedure TForm1.IdTCPServer1TestHandlerCommand(ASender: TIdCommand);
 begin
-  log('test');
+  logF('test');
   ASender.Thread.Connection.WriteLn('Connection is ok');
 end;
 
 procedure TForm1.IdTCPServer1FullScreenHandlerCommand(ASender: TIdCommand);
 begin
-  log('FULL_SCREEN');
+  logF('FULL_SCREEN');
 end;
 
 procedure TForm1.IdTCPServer1FullFormHandlerCommand(ASender: TIdCommand);
 begin
-  log('FULL_FORM');
+  logF('FULL_FORM');
 end;
 
 
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
+  if dbg then startLog();
+
   OpenDialog1.InitialDir := getAppPath();
   cnv := TDocumentConverter.Create();
+  if dbg then log('converter object created in FormCreate');
 end;
 
 procedure TForm1.Button2Click(Sender: TObject);
@@ -72,13 +79,17 @@ var
     useDialog:boolean;
 begin
   useDialog := true;
+  if dbg then log('use dialog = ' + BooleanToStr(useDialog));
+
   docs := TStringList.Create();
 
   OpenDialog1.Filter := 'Word docs | *.docx;*.doc';
   OpenDialog1.Execute;
 
+  if dbg then log('qty files from opendialog = ' + IntToStr(OpenDialog1.Files.Count));
   for i:=0 to OpenDialog1.Files.Count-1 do
   begin
+    if dbg then log('- doc N ' + IntToStr(i) + ' = ' +OpenDialog1.Files[i]);
     docs.Add(OpenDialog1.Files[i]);
   end;
 
@@ -99,9 +110,12 @@ begin
     end;
 
   end;
+  if dbg then log('path save = ' + pathSave);
+  // ShowMessage('Выбран путь для сохранения = ' + pathSave);
 
-  ShowMessage('Выбран путь для сохранения = ' + pathSave);
   cnv.dpi := InputBox('Установка','Установите DPI','150');
+  if dbg then log('dpi = ' + cnv.dpi);
+
   cnv.docx2png(docs,pathSave);
 end;
 
@@ -115,6 +129,11 @@ begin
 
   if (bOk = true) then cnv.gsPath := ExtractFileDir(OpenDialog1.FileName)+'\';
   ShowMessage('gs = ' + cnv.gsPath);
+end;
+
+procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  stopLog();
 end;
 
 end.
