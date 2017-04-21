@@ -8,7 +8,8 @@ uses
   MyUtils in '..\..\..\..\env\delphi\utils\MyUtils.pas',
   CommonLogic in 'components\CommonLogic.pas',
   ConverterUnit in 'components\Converter\ConverterUnit.pas',
-  getDosOutputUnit in '..\..\..\..\env\delphi\getDOS_Output\getDosOutputUnit.pas';
+  getDosOutputUnit in '..\..\..\..\env\delphi\getDOS_Output\getDosOutputUnit.pas',
+  LoggerUnit in 'components\Logger\LoggerUnit.pas';
 
 {$R *.res}
 
