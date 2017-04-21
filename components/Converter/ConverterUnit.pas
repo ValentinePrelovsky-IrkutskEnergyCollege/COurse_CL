@@ -2,7 +2,7 @@ unit ConverterUnit;
 
 interface
 uses  Windows, SysUtils, Classes,MyUtils,StrUtils,wdCore,getDosOutputUnit,
-Contnrs;
+Contnrs,LoggerUnit,CommonLogic;
 
 // ----------------------------------------------------------------------
 type TDocumentConverter = class (TObject)
@@ -51,8 +51,12 @@ Constructor TDocumentConverter.Create();
 begin
   wd := TWdCore.Create(); // init word
   wordStarted :=  wd.start;
+  if dbg then log('word started');
+
   tempPath := c_GetTempPath;
+  if dbg then log('temp path = ' + tempPath);
   path := def_path;
+  if dbg then log('path = ' + Path);
   dpi := '150';
 end;
 procedure TDocumentConverter.clearTemp();
@@ -61,6 +65,7 @@ procedure TDocumentConverter.clearTemp();
 var files:TStringList;
 begin
   files := TStringList.Create;
+  if dbg then log('clear temp = ' + 'del "' + tempPath + '" *.* /Q');
   files.Add('del "' + tempPath + '" *.* /Q');
   files.SaveToFile(tempPath + 'cleaner.bat');
   getDosOutput(tempPath + 'cleaner.bat');
@@ -85,9 +90,11 @@ var
 begin
   pdfs := TStringList.Create;
   shorts := TStringList.Create;
+  if dbg then log('docx2png main function called');
 
   clearTemp();  // сперва очистим файлы из временной директории
 
+  if dbg then log('inComeDoc.Count = ' + IntToStr(inComeDoc.Count));
   // проверка - если ничего нет - выход
   if (inComeDoc.Count = 0) then
   begin
@@ -100,11 +107,13 @@ begin
     //0. конвертировать все входящие word -> pdf
     docPDF := (convert_docx2pdf(inComeDoc[i]));
     //1. составить список коротких имен
-    shorts.Add(ExtractFileShortName(docPDF));
 
+    shorts.Add(ExtractFileShortName(docPDF));
+    if dbg then log('tmp pdf = ' + tmpPDF);
     tmpPDF := tempPath + '\'+IntToStr(i)+'.pdf';
     //2. переместить pdf во временную папку для конвертации
     RenameFile(docPDF,tmpPDF); // tmp dir содержит пдфки для записи в пнг(0,1..)
+    if dbg then log('rename from ' + docPDF + ' to ' + tmpPDF);
     pdfs.Add(tmpPDF); //3. добавить каждый временный документ в список pdfs
   end;
 
@@ -114,13 +123,22 @@ begin
   for i := 0 to shorts.Count -1 do
   begin
     // устанавливает имя согласно оригинальному
+    if dbg then log('set origin name: ' + tempPath + IntToStr(i)+'.png' + ' -> '
+    + shorts[i]);
+
     setOriginName(tempPath + IntToStr(i)+'.png', shorts[i]);
     // Копирует файлы с оригинальными именем в требуемый выходной каталог
+    if dbg then log('copying file: ' + tempPath + shorts[i] + '.png' + ' -> '+
+    ExtractFileDir(outDir) + '\'+shorts[i]+'.png');
+
     CopyFile(PChar(tempPath + shorts[i] + '.png'),
             PChar(ExtractFileDir(outDir) + '\'+shorts[i]+'.png'),false);
     // удаляет временный файл
     deleteFile(tempPath + shorts[i] + '.png');
     deleteFile(tempPath + IntToStr(i) + '.pdf');
+    if dbg then log('delete ' +  tempPath + shorts[i] + '.png' + ' and '+
+    tempPath + IntToStr(i) + '.pdf');
+
   end;
 end;  // конец процедуры
 
@@ -129,11 +147,13 @@ procedure TDocumentConverter.setDpi(dpi2set:string);
 // для конвертации документа PDF->PNG
 begin
   Self.iDpi := dpi2set;
+  if dbg then log('dpi set to ' + dpi2set);
 end;
 
 function Name_docxAsPdf(input:string):string;
 var path, docName:string;
 begin
+  if dbg then log('Name_docxAsPDF: ' + input);
   path := ExtractFileDir(input);
   docName := path + '\' + ExtractFileName(input);
 
@@ -142,6 +162,8 @@ begin
 
   docName := docName + '.pdf';
 
+  if dbg then log(' result = ' + docName);
+  if dbg then log('exit Name_docxAsPDF' + #10#13);
   Result := docName;
 end;
 function TDocumentConverter.convert_docx2pdf(input:string):string;
@@ -151,7 +173,7 @@ function TDocumentConverter.convert_docx2pdf(input:string):string;
 // Возврат полного имени преобразованного документа (PDF)
 var docName:string;
 begin
-  // msg('convert_docx2pdf called');
+  if dbg then log('convert_docx2pdf called');
 
   // docx to pdf - run by wdcore save as
   if (wordStarted = false) then wordStarted := wd.start;
@@ -160,8 +182,10 @@ begin
   docName := Name_docxAsPdf(input);
 
   // exports all pages by default + optimized for print
+  if dbg then log('create PDF from file ' + input);
   wd.getApp.ActiveDocument.ExportAsFixedFormat(docName,17);
   wd.saveAndClose();
+  if dbg then log('PDF file created: ' + docName);
   Result := docName;
 end;
 
@@ -173,11 +197,13 @@ procedure TDocumentConverter.convertTemp(incomePDFs:TStringList);
 // - выполняет эти команды интерпретатором ghostScript,
 // - уничтожает пакетный файл
 
-// Возврат нулевого файла входного списка
 var comm:string; commands: TStringList;
 var i: integer;
 begin
    commands := TStringList.Create;
+   if dbg then log('convertTemp procedure');
+
+   if dbg then log(' PDF count:' + IntToStr(inComePDFs.Count));
    for i:=0 to inComePDFs.Count-1 do
    begin
    // сама команда для посылки
@@ -185,13 +211,15 @@ begin
       + 'gswin32" -dNOPAUSE -dBATCH -sDEVICE=png16m -r'+Trim(dpi)
       +' -sOutputFile="' + tempPath+IntToStr(i)+'.png" "'
       + tempPath + IntToStr(i) + '.pdf"';
-    // msg('command = ' + comm);
+    if dbg then log(' command to run = ' + comm);
     commands.Add(comm);
   end;
   commands.SaveToFile(tempPath + 'in.bat');
 
   getDosOutput(tempPath + 'in.bat');
+  if dbg then log(' bat file ' + tempPath + 'in.bat was done');
   DeleteFile(tempPath + 'in.bat');
+  if dbg then log('exit convertTemp procedure');
 end;
 
 function TDocumentConverter.setOriginName(tempPNG,originPDF_ShortName:string):string;
@@ -201,8 +229,12 @@ function TDocumentConverter.setOriginName(tempPNG,originPDF_ShortName:string):st
 // Возврат оригинального имени изображения
   var res:string;
 begin
+
   res := ExtractFileDir(tempPNG)+'\'+originPDF_ShortName+'.png';
   RenameFile(tempPNG,ExtractFileDir(tempPNG)+'\'+originPDF_ShortName+'.png');
+  if dbg then log('set origin name = ' + tempPNG + ' to "' +
+  ExtractFileDir(tempPNG)+'\'+originPDF_ShortName+'.png"');
+
   Result := res;
 end;
 
@@ -216,6 +248,7 @@ begin
   res := ExtractFileName(fileName);
   p := LastCharPos(res,'.');
   res := LeftStr(res,p-1);
+  if dbg then log('ExtractFileShortName from = '+ fileName+' result = ' + res);
   Result := res;
 end;
 
