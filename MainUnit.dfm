@@ -54,7 +54,6 @@ object Form1: TForm1
     Height = 41
     Caption = 'TEST btn'
     TabOrder = 3
-    OnClick = Button1Click
   end
   object IdTCPServer1: TIdTCPServer
     Bindings = <>

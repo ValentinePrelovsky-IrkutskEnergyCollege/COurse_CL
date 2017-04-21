@@ -9,36 +9,28 @@ type TDocumentConverter = class (TObject)
   public
     Constructor Create();
 
-    procedure addDocuments(docs: TStringList);
-    procedure docx2png(inComeDoc:TStringList;outDir:string);overload;
-
+    procedure docx2png(inComeDoc:TStringList;outDir:string);
   private
      wd: TWdCore;
      iDpi: string;
      path: string;
      sTempPath: string;
      wordStarted: boolean;
-
+    // Tested
     function ExtractFileShortName(fileName:string):string;
-    procedure docx2png(inComeDoc:string);       overload;
-    procedure docx2png(inComeDoc,outDir:string);overload;
-    procedure pdf2png(inComePDF:string);overload;
-    procedure pdf2png(inComePDF,outDir:string);overload;
 
     function convert_docx2pdf(input:string):string;
-    function copyDoc(fromP,toP:string):string;
-    function copyOrigin(originPDF,tempPDF:string):boolean;
-    function convertTemp(incomePDFs:TStringList;counter:integer):string;
+    procedure convertTemp(incomePDFs:TStringList);
     function setOriginName(tempPNG,originPDF_ShortName:string):string;
-    procedure setDpi(dpi2set:string);
-    procedure setTempPath(path2set:string);
+
     procedure clearTemp();
 
+    procedure setDpi(dpi2set:string);
+    procedure setTempPath(path2set:string);
   published
     property dpi :string read iDpi write setDpi;
     property tempPath :string read sTempPath write setTempPath;
 end;
-
 
 const def_path =  'C:\Program Files (x86)\gs\gs9.09\bin\';
 
@@ -51,11 +43,13 @@ Constructor TDocumentConverter.Create();
 begin
   wd := TWdCore.Create(); // init word
   //wordStarted :=  wd.start;
-  tempPath := 'C:\123\pdf2 png\';
+  tempPath := 'C:\123\pdf\';
   path := def_path;
   dpi := '150';
 end;
 procedure TDocumentConverter.clearTemp();
+// Создает пакетный файл, чтобы удалить все файлы из временной папки,
+// не включая подпапки
 var files:TStringList;
 begin
   files := TStringList.Create;
@@ -65,46 +59,15 @@ begin
 
   files.Free;
 end;
+
 procedure TDocumentConverter.setTempPath(path2set:string);
+// Устанавливает местоположение папки временной папки для конвертера
 begin
   Self.sTempPath := path2set;
 end;
-procedure TDocumentConverter.addDocuments(docs: TStringList);
-var i: integer;
-begin
-  msg('add documents called');
-  for i:= 0 to docs.Count-1 do
-  begin
-    msg(docs[i]);
-  end;
-end;
-
-
-procedure TDocumentConverter.pdf2png(inComePDF:string);
-begin
-  pdf2png(inComePDF,inComePDF);
-end;
-procedure TDocumentConverter.pdf2png(inComePDF,outDir:string);
-  var docIn,docOut,imgIn,imgOut:string;
-k:string;
-
-begin
-  docIn  := inComePDF;
-  docOut := tempPath+'1.pdf';
-  imgIn  := tempPath + '1.png';
-
-  k :=  ExtractFileName(docIn);
-  k := LeftStr(k,Length(k)-4); // 4ИС.pdf ->  4ИС
-
-  copyOrigin(docIn, docOut);
-  //convertTemp(docOut,1);
-  imgOut := setOriginName(imgIn,k);
-  // возвратит файл изображение на место
-  DeleteFile(ExtractFileDir(docIn) + '\' + k +'.png');
-  CopyFile(PCHar(imgOut),PChar(ExtractFileDir(outDir) + '\' + k +'.png'),true);
-end;
 
 procedure TDocumentConverter.docx2png(inComeDoc:TStringList;outDir:string);
+// производит всю работу
 var
     i:integer;
     docPDF:string; // текущий pdf документ
@@ -127,86 +90,88 @@ begin
 
   for i := 0 to inComeDoc.Count -1 do
   begin
+    //0. конвертировать все входящие word -> pdf
     docPDF := (convert_docx2pdf(inComeDoc[i]));
-    sh := (ExtractFileShortName(docPDF));
-    shorts.Add(sh);
+    //1. составить список коротких имен
+    shorts.Add(ExtractFileShortName(docPDF));
 
     tmpPDF := tempPath + '\'+IntToStr(i)+'.pdf';
+    //2. переместить pdf во временную папку для конвертации
     RenameFile(docPDF,tmpPDF); // tmp dir содержит пдфки для записи в пнг(0,1..)
-    pdfs.Add(tmpPDF); // все временные пдфки записаны в очередь
+    pdfs.Add(tmpPDF); //3. добавить каждый временный документ в список pdfs
   end;
 
-  convertTemp(pdfs,-1);
+  convertTemp(pdfs); // конвертирует все временные документы PDF в PNG
 
   // полученные временные файлы нужно вернуть
   for i := 0 to shorts.Count -1 do
   begin
+    // устанавливает имя согласно оригинальному
     setOriginName(tempPath + IntToStr(i)+'.png', shorts[i]);
+    // Копирует файлы с оригинальными именем в требуемый выходной каталог
     CopyFile(PChar(tempPath + shorts[i] + '.png'),
             PChar(ExtractFileDir(outDir) + '\'+shorts[i]+'.png'),false);
+    // удаляет временный файл
     deleteFile(tempPath + shorts[i] + '.png');
+    deleteFile(tempPath + IntToStr(i) + '.pdf');
   end;
-
-end;
+end;  // конец процедуры
 
 procedure TDocumentConverter.setDpi(dpi2set:string);
+// Устанавливает свойство количества точек на дюйм
+// для конвертации документа PDF->PNG
 begin
   Self.iDpi := dpi2set;
 end;
 
-procedure TDocumentConverter.docx2png(inComeDoc:string);
+function Name_docxAsPdf(input:string):string;
+var path, docName:string;
 begin
-  msg('docx 2 png = income only: ' + inCOmeDoc);
-end;
-procedure TDocumentConverter.docx2png(inComeDoc,outDir:string);
-begin
-  msg('docx to png called');
-  msg('incomeDoc = ' + inComeDoc);
-  msg('outDir = ' + outDir);
-end;
+  path := ExtractFileDir(input);
+  docName := path + '\' + ExtractFileName(input);
 
+  docName := LeftStr(docName,Length(docName)-(Length(docName)+1
+  -LastCharPos(docName,'.'))); // 4ИС.pdf ->  4ИС
+
+  docName := docName + '.pdf';
+
+  Result := docName;
+end;
 function TDocumentConverter.convert_docx2pdf(input:string):string;
+// Основная рабочая функция.
+// Преобразует документ Word в PDF документ. Параметры - входной файл
+
+// Возврат полного имени преобразованного документа (PDF)
 var path,docName:string;
 begin
+  msg('convert_docx2pdf called');
+
   // docx to pdf - run by wdcore save as
   if (wordStarted = false) then wordStarted := wd.start;
   wd.openDoc(input);
 
-  path := ExtractFileDir(input);
-  docName := path + '\' + ExtractFileName(input);
-  docName := LeftStr(docName,Length(docName)-(Length(docName)+1
-  -LastCharPos(docName,'.'))); // 4ИС.pdf ->  4ИС
-  docName := docName + '.pdf';
+  docName := Name_docxAsPdf(input);
 
   // exports all pages by default + optimized for print
-  //  Word.getApp.ActiveDocument.ExportAsFixedFormat(output, 17);
   wd.getApp.ActiveDocument.ExportAsFixedFormat(docName,17);
   wd.saveAndClose();
   Result := docName;
 end;
-function TDocumentConverter.copyDoc(fromP,toP:string):string;
-var p,p1: PAnsiChar;
-begin
-   p := PChar(fromP);
-   p1 := PChar(Concat(toP,ExtractFileName(fromP)));
 
-   CopyFile(p,p1,true);
-   Result := (p1);
-end;
-// simple copy for string
-function TDocumentConverter.copyOrigin(originPDF,tempPDF:string):boolean;
-begin
-  Result := CopyFile(PChar(originPDF),PChar(tempPDF),true);
-end;
-// returns temp PNG name
-function TDocumentConverter.convertTemp(incomePDFs:TStringList;counter:integer):string;
-var comm:string;
-var commands: TStringList;
+
+procedure TDocumentConverter.convertTemp(incomePDFs:TStringList);
+// Основная рабочая функция.
+// - Формирует список файлов на конвертацию из входного списка
+// - сохраняет их в качестве команд в пакетный файл,
+// - выполняет эти команды интерпретатором ghostScript,
+// - уничтожает пакетный файл
+
+// Возврат нулевого файла входного списка
+var comm:string; commands: TStringList;
 var i: integer;
 begin
-   commands :=inComePDFs;
-
-   for i:=0 to commands.Count-1 do
+   commands := TStringList.Create;
+   for i:=0 to inComePDFs.Count-1 do
    begin
    // сама команда для посылки
       comm :=  '"' + path +''
@@ -220,11 +185,13 @@ begin
 
   getDosOutput(tempPath + 'in.bat');
   DeleteFile(tempPath + 'in.bat');
-
-  Result := tempPath+IntToStr(0)+'.png';
 end;
 
 function TDocumentConverter.setOriginName(tempPNG,originPDF_ShortName:string):string;
+// устанавливает имя временного изображения (1й аргумент)
+// в качестве оригинального имени (без расширения 2й аргумент)
+
+// Возврат оригинального имени изображения
   var res:string;
 begin
   res := ExtractFileDir(tempPNG)+'\'+originPDF_ShortName+'.png';
@@ -233,6 +200,9 @@ begin
 end;
 
 function TDocumentConverter.ExtractFileShortName(fileName:string):string;
+// Выделяет из имени файла короткую часть - имя без расширения и без пути
+
+// Возврат строки = имени файла без расширения
 var res:string;
 var p:integer;
 begin
@@ -243,107 +213,6 @@ begin
 end;
 
 
-
-
-
-
-
-
 // path := C:\Program Files (x86)\gs\gs9.09\bin\
 // path gswin32 -dNOPAUSE -sDEVICE=jpeg -r150 -sOutputFile=output-%d.png midOutput.pdf
-
-{
-procedure TForm1.Button1Click(Sender: TObject);
-var s,outDir:string;var i:integer;var bOut, bOpened: boolean;var wFiles: TStringList;
-var pdfFile,wDoc:string;
-begin
-  files := TStringList.Create;  commands := TStringList.Create;  bOut := CheckBox1.Checked;
-  CheckBox1.Enabled := false;
-
-  s:= InputBox('Введите число точек','Введите количество точек на дюйм','');
-
-  if (s = '') then
-  begin
-    MessageDlg('Не введено количество точек на дюйм'+ #10#13+'Принято по умолчанию 150 точек на дюйм',mtWarning,[mbOk],0);
-    s := '150';
-  end;
-  dpi := s; // -> converterUnit uses dpi variable
-
-  OpenDialog1.Filter := 'Word files|*.docx;*.doc';OpenDialog1.FilterIndex := 1;
-  bOpened := OpenDialog1.Execute;
-
-  if (bOpened = false) then  begin  MessageDlg('Не выбрано расположение word файлов'+ #10#13+
-    'К сожалению, нечего конвертировать. Выход',mtWarning,[mbOk],0);    Exit;  end;
-
-  if (bOut = false) then
-  begin
-    // choose different folder -> SaveDialog1
-    SaveDialog1.Title := 'Напишите имя папки для сохранения';
-    SaveDialog1.InitialDir := getCurrentDir();
-
-    if(SaveDialog1.Execute = false) then
-    begin
-      outDir := getCurrentDir() + '\defaultDir\';
-      MessageBox(Self.Handle,
-        PChar('Папка не обозначена. Записано в путь ' + outDir),
-        PChar('Запись сохраняемых файлов'),MB_OK);
-    end
-    else
-    begin
-      outDir := SaveDialog1.FileName + '\';
-    end;
-  end;
-  if (bOpened = true) then
-  begin
-    for i:=0 to (OpenDialog1.Files.Count)-1 do
-    begin
-      if (wordStarted = false) then word.start;
-      files.Add(Trim(OpenDialog1.Files[i]));
-      wDoc := OpenDialog1.Files[i];
-      pdfFile := convert_docx2pdf(wDoc);
-
-      if (bOut = true) then pdf2png(pdfFile)
-      else
-      begin
-        if (DirectoryExists(outDir) = false) then MkDir(PChar(outDir));
-        pdf2png(pdfFile,outDir);
-      end;// bOut
-      deleteFile(tempPath + '1.pdf');
-    end;  // for i:0
-  end; // bOpened
-
-  commands.Add('taskkill /im "gswin32.exe" /f /t');
-  commands.Add('del "'+tempPath+'*.*" /Q ');
-  commands.SaveToFile(tempPath+'ba.bat');
-  getDosOutput(tempPath + 'ba.bat');
-
-  deleteFile(tempPath + 'ba.bat');
-
-  CheckBox1.Enabled := true;
-end;
-
-procedure TForm1.Button2Click(Sender: TObject);
-var bSet: boolean;
-begin
-  OpenDialog1.Filter := 'Ghost application|*gs*.exe';
-  OpenDialog1.InitialDir := 'C:\Program Files';
-
-  bSet :=  OpenDialog1.Execute;
-  if (bSet = true) then
-  begin
-    ShowMessage('путь к интерпретатору GhostScript установлен как '
-    +#10#13#10#13+ OpenDialog1.FileName);
-    path := ExtractFilePath(OpenDialog1.FileName);
-  end;
-end;
-
-procedure TForm1.Button3Click(Sender: TObject);
-begin
-  ShowMessage(convert_docx2pdf('C:\env\delphi\word_core\test_frame\data\example.docx'));
-end;
-
-
-
-}
-
 end.
