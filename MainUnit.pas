@@ -5,18 +5,17 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, IdBaseComponent, IdComponent, IdTCPServer, StdCtrls, CommonLogic,
-  MyUtils,ShellApi{shellexecute},converterUnit,strUtils{TEST purposes};
+  MyUtils,ShellApi{shellexecute},converterUnit,strUtils, FileCtrl{TEST purposes};
 
 type
   TForm1 = class(TForm)
     Memo1: TMemo;
     IdTCPServer1: TIdTCPServer;
-    Button3: TButton;
     OpenDialog1: TOpenDialog;
     Label1: TLabel;
     Button2: TButton;
     Button1: TButton;
-    SaveDialog1: TSaveDialog;
+    Button4: TButton;
     procedure IdTCPServer1TestHandlerCommand(ASender: TIdCommand);
     procedure IdTCPServer1FullScreenHandlerCommand(ASender: TIdCommand);
     procedure IdTCPServer1FullFormHandlerCommand(ASender: TIdCommand);
@@ -71,7 +70,7 @@ var
     pathSave: string; // каталог, куда сохранится итоговая картинка
     useDialog:boolean;
 begin
-  useDialog := false;
+  useDialog := true;
   docs := TStringList.Create();
 
   OpenDialog1.Filter := 'Word docs | *.docx;*.doc';
@@ -82,20 +81,26 @@ begin
     docs.Add(OpenDialog1.Files[i]);
   end;
 
-  if useDialog = false then pathSave := getCurrentDir()+'\defaultDir\';
-  if (DirectoryExists(pathSave) = false) then MkDir(pathSave);
-  if (useDialog = true) then
+  if useDialog = false then
   begin
-    SaveDialog1.Title := 'Выберите имя каталога для сохранения';
-    SaveDialog1.Filter := 'Папки|*.*';
-
-    // true.. Если выбран каталог, так и останется
-    useDialog := SaveDialog1.Execute;
-    if useDialog = true then pathSave := SaveDialog1.FileName + '\';
-    if useDialog = false then pathSave := 'C:\Users\Valentin\Desktop\';
+    pathSave := getCurrentDir()+'\defaultDir\';
+    if (DirectoryExists(pathSave) = false)then MkDir(pathSave);
   end;
 
-  ShowMessage('path save = ' + pathSave);
+  if (useDialog = true) then
+  begin
+    SelectDirectory('Пожалуйста, выберите каталог для сохранения','',pathSave);
+    pathSave := pathSave + '\';
+    if pathSave = '' then
+    begin
+      if (DirectoryExists(pathSave) = false)then MkDir(pathSave);
+      pathSave := getCurrentDir()+'\defaultDir\';
+    end;
+
+  end;
+
+  ShowMessage('Выбран путь для сохранения = ' + pathSave);
+  cnv.dpi := InputBox('Установка','Установите DPI','150');
   cnv.docx2png(docs,pathSave);
 end;
 

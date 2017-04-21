@@ -30,21 +30,13 @@ object Form1: TForm1
       'Memo1')
     TabOrder = 0
   end
-  object Button3: TButton
-    Left = 208
-    Top = 96
-    Width = 75
-    Height = 25
-    Caption = 'docx -> jpg'
-    TabOrder = 1
-  end
   object Button2: TButton
     Left = 32
     Top = 208
     Width = 137
     Height = 41
     Caption = 'convert docx files to png'
-    TabOrder = 2
+    TabOrder = 1
     OnClick = Button2Click
   end
   object Button1: TButton
@@ -53,7 +45,16 @@ object Form1: TForm1
     Width = 97
     Height = 41
     Caption = 'TEST btn'
+    TabOrder = 2
+  end
+  object Button4: TButton
+    Left = 208
+    Top = 128
+    Width = 129
+    Height = 33
+    Caption = 'define ghostScript exe location'
     TabOrder = 3
+    WordWrap = True
   end
   object IdTCPServer1: TIdTCPServer
     Bindings = <>
@@ -103,9 +104,5 @@ object Form1: TForm1
     Options = [ofHideReadOnly, ofAllowMultiSelect, ofEnableSizing]
     Left = 384
     Top = 40
-  end
-  object SaveDialog1: TSaveDialog
-    Left = 232
-    Top = 32
   end
 end
