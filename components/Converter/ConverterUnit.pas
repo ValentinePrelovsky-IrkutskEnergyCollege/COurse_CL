@@ -40,11 +40,18 @@ procedure msg(s:string);
 begin
   MessageBox(0,PChar(s),'App title',MB_OK);
 end;
+function c_GetTempPath: String;
+var
+  Buffer: array[0..1023] of Char;
+begin
+  SetString(Result, Buffer, GetTempPath(Sizeof(Buffer)-1,Buffer));
+end;
+
 Constructor TDocumentConverter.Create();
 begin
   wd := TWdCore.Create(); // init word
-  //wordStarted :=  wd.start;
-  tempPath := 'C:\123\pdf\';
+  wordStarted :=  wd.start;
+  tempPath := c_GetTempPath;
   path := def_path;
   dpi := '150';
 end;
