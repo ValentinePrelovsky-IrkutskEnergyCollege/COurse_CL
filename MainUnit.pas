@@ -22,7 +22,6 @@ type
     procedure IdTCPServer1FullFormHandlerCommand(ASender: TIdCommand);
     procedure FormCreate(Sender: TObject);
     procedure Button2Click(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -72,7 +71,7 @@ var
     pathSave: string; // каталог, куда сохранится итоговая картинка
     useDialog:boolean;
 begin
-  useDialog := true;
+  useDialog := false;
   docs := TStringList.Create();
 
   OpenDialog1.Filter := 'Word docs | *.docx;*.doc';
@@ -84,6 +83,7 @@ begin
   end;
 
   if useDialog = false then pathSave := getCurrentDir()+'\defaultDir\';
+  if (DirectoryExists(pathSave) = false) then MkDir(pathSave);
   if (useDialog = true) then
   begin
     SaveDialog1.Title := 'Выберите имя каталога для сохранения';
@@ -99,9 +99,5 @@ begin
   cnv.docx2png(docs,pathSave);
 end;
 
-procedure TForm1.Button1Click(Sender: TObject);
-begin
-  ShowMessage('test func');
-end;
 
 end.
