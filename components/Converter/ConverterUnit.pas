@@ -30,6 +30,7 @@ type TDocumentConverter = class (TObject)
   published
     property dpi :string read iDpi write setDpi;
     property tempPath :string read sTempPath write setTempPath;
+    property gsPath:string read path write path;
 end;
 
 const def_path =  'C:\Program Files (x86)\gs\gs9.09\bin\';
@@ -72,7 +73,6 @@ var
     i:integer;
     docPDF:string; // текущий pdf документ
     tmpPDF:string; // имя временного документа (для гостскрипт)
-    sh: string;    // короткое имя
 
     pdfs, shorts: TStringList;
 begin
@@ -142,9 +142,9 @@ function TDocumentConverter.convert_docx2pdf(input:string):string;
 // Преобразует документ Word в PDF документ. Параметры - входной файл
 
 // Возврат полного имени преобразованного документа (PDF)
-var path,docName:string;
+var docName:string;
 begin
-  msg('convert_docx2pdf called');
+  // msg('convert_docx2pdf called');
 
   // docx to pdf - run by wdcore save as
   if (wordStarted = false) then wordStarted := wd.start;
