@@ -55,6 +55,7 @@ object Form1: TForm1
     Caption = 'define ghostScript exe location'
     TabOrder = 3
     WordWrap = True
+    OnClick = Button4Click
   end
   object IdTCPServer1: TIdTCPServer
     Bindings = <>

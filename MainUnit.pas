@@ -21,6 +21,7 @@ type
     procedure IdTCPServer1FullFormHandlerCommand(ASender: TIdCommand);
     procedure FormCreate(Sender: TObject);
     procedure Button2Click(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -104,5 +105,16 @@ begin
   cnv.docx2png(docs,pathSave);
 end;
 
+
+procedure TForm1.Button4Click(Sender: TObject);
+var bOk: boolean;
+begin
+  OpenDialog1.Filter := 'Ghost app | gs*.exe';
+  OpenDialog1.InitialDir := 'C:\';
+  bOk := OpenDialog1.Execute;
+
+  if (bOk = true) then cnv.gsPath := ExtractFileDir(OpenDialog1.FileName)+'\';
+  ShowMessage('gs = ' + cnv.gsPath);
+end;
 
 end.
